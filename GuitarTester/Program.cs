@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 using SharpDX.DirectInput;
@@ -9,6 +12,9 @@ namespace GuitarTester
 {
     class Program
     {
+
+        private static long lastTick = System.Environment.TickCount;
+
         static void Main()
         {
             Config config;
@@ -65,216 +71,101 @@ namespace GuitarTester
                 Console.WriteLine(controller.Properties.InstanceName);
                 Console.ForegroundColor = ConsoleColor.Green;
 
-                Console.WriteLine("Use some flat object to press all buttons at the same time. Start to Exit.");
-                Console.WriteLine("Recommended object: Roll of wipers, and press it QUICKLY and release QUICKLY for best results");
-                Console.WriteLine();
-                Console.WriteLine();
                 Console.ResetColor();
 
                 controller.Acquire();
 
                 //controller.SetCooperativeLevel(IntPtr.Zero, CooperativeLevel.NonExclusive);
 
-                bool[] buttons;
+                DateTime lastWhammyTime = DateTime.Now;
+                int lastWhammyValue = 0;
 
-                bool gp = false;
-                bool rp = false;
-                bool yp = false;
-                bool bp = false;
-                bool op = false;
+                List<double> times = new List<double>();
 
-                bool buttonsPressed = false;
+                double secondDelta = 0;
 
-                DateTime comp = DateTime.Now;
-                DateTime g = DateTime.Now;
-                DateTime r = DateTime.Now;
-                DateTime y = DateTime.Now;
-                DateTime b = DateTime.Now;
-                DateTime o = DateTime.Now;
+                Console.WriteLine();
 
-                bool first = true;
+                TEST:
 
-                while (true)
+                Console.WriteLine("Beginning the test in 3");
+                Thread.Sleep(1000);
+                Console.WriteLine("Beginning the test in 2");
+                Thread.Sleep(1000);
+                Console.WriteLine("Beginning the test in 1");
+                Thread.Sleep(1000);
+                Console.WriteLine("Start.\n");
+
+                while (times.Count < 101)
                 {
-                    buttons = controller.GetCurrentState().Buttons;
+                    var currentTick = System.Environment.TickCount;
+                    double delta = (currentTick - lastTick);
+                    secondDelta += delta / 1000f;
 
-                    if (buttons[6])
+                    lastTick = currentTick;
+
+                    Console.WriteLine("Device changes counted: " + times.Count);
+
+                    DateTime currentTime = DateTime.Now;
+
+                    int z = controller.GetCurrentState().Z;
+
+                    if(lastWhammyValue != controller.GetCurrentState().Z)
                     {
-                        Environment.Exit(0);
-                    }
+                        times.Add((currentTime - lastWhammyTime).TotalMilliseconds);
 
-                    if (!buttonsPressed)
-                    {
-                        if (buttons[0] && !gp) // green
-                        {
-                            g = DateTime.Now;
-                            gp = true;
-
-                            if (first)
-                            {
-                                comp = g;
-                                first = false;
-                            }
-                        }
-                        if (buttons[1] && !rp) // red
-                        {
-                            r = DateTime.Now;
-                            rp = true;
-
-                            if (first)
-                            {
-                                comp = r;
-                                first = false;
-                            }
-                        }
-                        if (buttons[2] && !yp) // yellow
-                        {
-                            y = DateTime.Now;
-                            yp = true;
-
-                            if (first)
-                            {
-                                comp = y;
-                                first = false;
-                            }
-                        }
-                        if (buttons[3] && !bp) // blue
-                        {
-                            b = DateTime.Now;
-                            bp = true;
-
-                            if (first)
-                            {
-                                comp = b;
-                                first = false;
-                            }
-                        }
-                        if (buttons[4] && !op) // yellow
-                        {
-                            o = DateTime.Now;
-                            op = true;
-
-                            if (first)
-                            {
-                                comp = o;
-                                first = false;
-                            }
-                        }
-
-                        if (gp && rp && yp && bp && op)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("On:  " + (g - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("On:  " + (r - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.WriteLine("On:  " + (y - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.Blue;
-                            Console.WriteLine("On:  " + (b - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.DarkYellow;
-                            Console.WriteLine("On:  " + (o - comp).TotalMilliseconds + "ms              ");
-
-                            buttonsPressed = true;
-
-                            gp = false;
-                            rp = false;
-                            yp = false;
-                            bp = false;
-                            op = false;
-
-                            first = true;
-
-                            Thread.Sleep(100);
-                        }
-                    } 
-                    else
-                    {
-                        if (!buttons[0] && !gp) // green
-                        {
-                            g = DateTime.Now;
-                            gp = true;
-
-                            if (first)
-                            {
-                                comp = g;
-                                first = false;
-                            }
-                        }
-                        if (!buttons[1] && !rp) // red
-                        {
-                            r = DateTime.Now;
-                            rp = true;
-
-                            if (first)
-                            {
-                                comp = r;
-                                first = false;
-                            }
-                        }
-                        if (!buttons[2] && !yp) // yellow
-                        {
-                            y = DateTime.Now;
-                            yp = true;
-
-                            if (first)
-                            {
-                                comp = y;
-                                first = false;
-                            }
-                        }
-                        if (!buttons[3] && !bp) // blue
-                        {
-                            b = DateTime.Now;
-                            bp = true;
-
-                            if (first)
-                            {
-                                comp = b;
-                                first = false;
-                            }
-                        }
-                        if (!buttons[4] && !op) // yellow
-                        {
-                            o = DateTime.Now;
-                            op = true;
-
-                            if (first)
-                            {
-                                comp = o;
-                                first = false;
-                            }
-                        }
-
-                        if (gp && rp && yp && bp && op)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("Off: " + (g - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Off: " + (r - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.WriteLine("Off: " + (y - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.Blue;
-                            Console.WriteLine("Off: " + (b - comp).TotalMilliseconds + "ms              ");
-                            Console.ForegroundColor = ConsoleColor.DarkYellow;
-                            Console.WriteLine("Off: " + (o - comp).TotalMilliseconds + "ms              ");
-
-                            buttonsPressed = false;
-
-                            gp = false;
-                            rp = false;
-                            yp = false;
-                            bp = false;
-                            op = false;
-
-                            first = true;
-
-                            Thread.Sleep(100);
-                        }
+                        lastWhammyTime = currentTime;
+                        lastWhammyValue = controller.GetCurrentState().Z;
                     }
 
                     Console.SetCursorPosition(0, 5);
                 }
+
+                Console.SetCursorPosition(0, 7);
+
+                if (times.Count > 0)
+                {
+                    double average = 0;
+
+                    foreach (double value in times)
+                    {
+                        average += value;
+                    }
+
+                    average /= times.Count;
+
+                    Console.WriteLine($"Average time between axis changes per second: {average}ms");
+
+                    times.Clear();
+                }
+                else
+                {
+                    Console.WriteLine($"No axis changes were found.");
+                }
+
+                Console.WriteLine("\nPress R to restart the test or close the application if finished");
+
+                if(Console.ReadKey(true).Key == ConsoleKey.R)
+                {
+                    times.Clear();
+                    lastWhammyTime = DateTime.Now;
+                    lastWhammyValue = 0;
+
+                    Console.SetCursorPosition(0, 2);
+
+                    for(int i = 2; i < 20; i++)
+                    {
+                        Console.SetCursorPosition(0, i);
+
+                        Console.Write(new string(' ', Console.WindowWidth));
+                    }
+
+                    Console.SetCursorPosition(0, 2);
+
+                    goto TEST;
+                }
             }
         }
+
     }
 }
